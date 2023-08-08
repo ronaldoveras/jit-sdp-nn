@@ -193,9 +193,12 @@ def extract_events(df_commit, waiting_time):
 
 
 def remove_noise(df_events, orb_n):
+    print('orb_n {}'.format(orb_n))
     grouped_target = df_events.groupby(FEATURES)['target']
     cumsum = grouped_target.cumsum()
+    print('cumsum {}'.format(cumsum))
     cumcount = grouped_target.cumcount()
+    print('cumcount {}'.format(cumcount))
     noise = cumcount - cumsum >= orb_n
     noise = noise & (df_events['target'] == 1)
     return df_events[~noise]

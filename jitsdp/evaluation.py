@@ -56,8 +56,8 @@ def run(config):
         if config['incremental']:
             pipeline.load()
         for metrics in pipeline.train(df_train, df_ma=df_tail, df_val=df_val):
-            print('Realizando treinamento... métrica {}'.format(metrics))
             if __has_metrics(metrics):
+                print('logando dados relativos à métrica {}'.format(metrics))
                 mlflow.log_metrics(metrics=metrics, step=update_step)
             update_step += 1
         if config['incremental']:
@@ -67,7 +67,8 @@ def run(config):
         target_prediction = pd.concat(
             [target_prediction, target_prediction_test])
         print('Salvando o modelo da iteração ' + str(current))
-        pipeline.save()
+        
+        # pipeline.save()
         # explainer = shap.TreeExplainer(pipeline.model)
         # shap_values = explainer.shap_values(df_test)
         # shap.plots.beeswarm(shap_values, max_display=99, show=False)

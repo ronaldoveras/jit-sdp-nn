@@ -84,7 +84,8 @@ def prequential(df_preprocess):
     prequential_cols = ['timestamp', 'timestamp_fix'] + \
         FEATURES + ['target']
     df_prequential = df_preprocess[prequential_cols].copy()
-    df_prequential['timestep'] = range(len(df_prequential))
+    df_prequential['timestep'] = range(len(df_prequential)) #Sequencial no tamanho do dataframe
+
     return df_prequential
 
 
