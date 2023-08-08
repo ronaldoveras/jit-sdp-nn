@@ -7,7 +7,10 @@ import numpy as np
 from hyperopt import hp
 from hyperopt.pyll.base import scope
 import hyperopt.pyll.stochastic as config_space_sampler
+import pandas as pd
+import warnings
 
+warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 class Experiment():
 
@@ -36,7 +39,7 @@ class Experiment():
                 configs.append(config)
         return configs
 
-    def to_shell(self, out):
+    def to_shell(self, out, total):
         for config in self.to_configs():
             config = self.remove_meta_model(config)
             params = ['--{} {}'.format(key, value)
@@ -45,6 +48,13 @@ class Experiment():
             prefix = './' if self.bundle else ''
             out.write(
                 '{}jitsdp {} {}\n'.format(prefix, self.meta_model, params))
+            out.write('\n')
+            out.write('counter=$((counter + 1))')
+            out.write('\n')
+            out.write('echo \"Experimento $counter sendo executado...\"')
+            out.write('\n')
+            total = total + 1
+        return total
 
     def add_start(self, config):
         config = dict(config)
@@ -76,6 +86,7 @@ def add_shared_arguments(parser, filename):
 
 
 def generate(config):
+    print('Entrando no processo de tuning...')
     # experiments
     cross_project = config['cross_project']
     validation_end = config['validation_end']
@@ -96,9 +107,15 @@ def generate(config):
         borb_grid,
         orb_grid,
     ]
+
+    print(experiment_configs)
     # seeds and datasets
     experiment_configs = map(grid_to_configs, experiment_configs)
+    
     experiment_configs = itertools.chain.from_iterable(experiment_configs)
+    # t = pd.DataFrame({'exp': list(experiment_configs)})
+    # print('Tamanho dos experimentos: {}'.format(t.shape[0]))
+
     seed_dataset_configs = {
         'dataset': ['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'],
         'seed': [118819124794768324716243582738038647832, 233788382964979925575822780126624241621, 123852561530946589675929508680442328351],
@@ -107,19 +124,31 @@ def generate(config):
     # meta-models and models
     models_configs = create_models_configs(config)
     file_ = filename_to_path(config['filename'])
+    print(file_)
     with open(file_, mode='w') as out:
+        qtd_experimentos = 0
+        out.write('counter=0')
+        out.write('\n')
         for experiment in configs_to_experiments(validation_end, config['bundle'], experiment_configs, seed_dataset_configs, models_configs):
-            experiment.to_shell(out)
+            print('Há experimentos...')
+            print('Executando geração de experimento... ')
+            qtd_experimentos = experiment.to_shell(out, qtd_experimentos)
+        print('Total de experimentos: {}'.format(qtd_experimentos))
+        
 
 
 def configs_to_experiments(validation_end, bundle, experiment_configs, seed_dataset_configs, models_configs):
+    
     for experiment_config in experiment_configs:
+        
         classifier = '{}-{}'.format(
             experiment_config['meta-model'], experiment_config['model'])
+        print(classifier)
         experiment = Experiment(validation_end=validation_end,
                                 bundle=bundle,
                                 experiment_config=experiment_config,
                                 seed_dataset_configs=seed_dataset_configs, models_configs=models_configs[classifier])
+        print('gerado experimento...')
         yield experiment
 
 

@@ -7,6 +7,9 @@ from jitsdp import baseline, tuning, testing, report, export
 
 import argparse
 import sys
+import warnings
+
+warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 
 def main():

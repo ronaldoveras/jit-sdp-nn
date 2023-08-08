@@ -170,17 +170,21 @@ def extract_events(df_commit, waiting_time):
     df_cleaned = df_clean.copy()
     df_cleaned['timestamp_event'] = df_cleaned['timestamp'] + \
         verification_latency
+    #acima, o evento corresponde ao timestamp original acrescido da verificação de latência, onde o commit deve ser rotulado
+    
     # bugged
     df_bug = df_commit[df_commit['target'] == 1]
     df_bugged = df_bug.copy()
     df_bugged['timestamp_event'] = df_bugged['timestamp_fix'].astype(int)
+    #acima, o evento corresponde ao timestamp_fix onde o commit já foi rotulado
+
     # bug cleaned
     df_bug_cleaned = df_bug.copy()
-    waited_time = df_bug_cleaned['timestamp_fix'] - df_bug_cleaned['timestamp']
-    df_bug_cleaned = df_bug_cleaned[waited_time >= verification_latency]
-    df_bug_cleaned['target'] = 0
+    waited_time = df_bug_cleaned['timestamp_fix'] - df_bug_cleaned['timestamp'] #Cálculo do tempo de espera para ser rotulado
+    df_bug_cleaned = df_bug_cleaned[waited_time >= verification_latency] #Desses commits, alguns deles foram rotulados após a verificação de latência
+    df_bug_cleaned['target'] = 0 # Marca esses commits como clean
     df_bug_cleaned['timestamp_event'] = df_bug_cleaned['timestamp'] + \
-        verification_latency
+        verification_latency # Registra o novo tempo de evento quando seu rótulo foi alterado para clean novamente
     # events
     df_events = pd.concat([df_cleaned, df_bugged, df_bug_cleaned])
     df_events = df_events.sort_values('timestamp_event', kind='mergesort')
