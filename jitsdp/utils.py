@@ -10,6 +10,9 @@ import pandas as pd
 import pathlib
 import sys
 import time
+import warnings
+
+warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 
 def mkdir(dir):
@@ -30,6 +33,8 @@ def filename_to_path(filename):
 
 def setup_and_run(config, frun):
     run_command = standard_run_command(sys.argv)
+    print('Iniciando a execução do experimento {} às {}'.format(run_command, datetime.now()))
+
     meta_model = config['meta_model']
     logging.getLogger('').handlers = []
     dir = pathlib.Path('logs')
@@ -46,6 +51,8 @@ def setup_and_run(config, frun):
         mlflow.set_tag('run.command', run_command)
         frun(config=config)
         mlflow.log_artifact(log)
+    print('Finalizando a execução do experimento {} às {}'.format(run_command, datetime.now()))
+
 
 
 def standard_run_command(sys_args):

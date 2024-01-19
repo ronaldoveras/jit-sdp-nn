@@ -64,8 +64,11 @@ def valid_data(config, df_runs, single_config, n_seeds):
     if not config['no_validation']:
         n_datasets = 10
         n_cross_projects = len(config['cross_project'])
+        print('n_cross_projects: {} '.format(n_cross_projects) )
         n_models = len(config['orb_model']) + len(config['borb_model'])
+        print('n_models: {} '.format(n_models) )
         n_configs = 1 if single_config else config['end'] - config['start']
+        print('n_configs: {} '.format(n_configs) )
         expected_n_runs = n_models * n_cross_projects * \
             n_configs * n_datasets * n_seeds
         n_runs = len(df_runs)

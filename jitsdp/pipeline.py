@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 def set_seed(config):
     seed = config['seed']
+    print('Seed: {}'.format(seed))
     torch.manual_seed(torch_seed(seed))
     np.random.seed(random_state_seed(seed))
 
@@ -62,6 +63,7 @@ def create_pipeline(config):
                           l0=config['borb_l0'],
                           l1=config['borb_l1'],
                           m=config['borb_m'])
+        print('Vou usar o BORB')
     return classifier
 
 

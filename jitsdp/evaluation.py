@@ -10,7 +10,8 @@ import mlflow
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import StratifiedShuffleSplit
-
+# import shap
+# import matplotlib.pyplot as plt
 
 def alterarData(df):
     df['timestamp_col'] = pd.to_datetime(df['timestamp'], unit='s')
@@ -79,6 +80,7 @@ def run(config):
             pipeline.load()
         for metrics in pipeline.train(df_train, df_ma=df_tail, df_val=df_val):
             if __has_metrics(metrics):
+                print('logando dados relativos à métrica {}'.format(metrics))
                 mlflow.log_metrics(metrics=metrics, step=update_step)
             update_step += 1
         if config['incremental']:
@@ -87,8 +89,17 @@ def run(config):
             df_test, df_threshold=df_tail, df_proportion=df_train, track_forest=config['track_forest'], track_time=config['track_time'])
         target_prediction = pd.concat(
             [target_prediction, target_prediction_test])
-
+        print('Salvando o modelo da iteração ' + str(current))
+        
+        # pipeline.save()
+        # explainer = shap.TreeExplainer(pipeline.model)
+        # shap_values = explainer.shap_values(df_test)
+        # shap.plots.beeswarm(shap_values, max_display=99, show=False)
+        # plt.gcf()
+        # plt.savefig("logs/beeswarm" + current + ".png")
+        # np.abs(shap_values.sum(1) + explainer.expected_value - pred).max()
     target_prediction = target_prediction.reset_index(drop=True)
+    target_prediction.to_csv('logs/resultados.csv')
     results = met.prequential_metrics(
         target_prediction, .99, config['borb_th'])
     print('Média two months (std): {}({})'.format(np.mean(two_months_length), np.std(two_months_length)))
