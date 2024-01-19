@@ -11,6 +11,10 @@ import pandas as pd
 import mlflow
 from scipy.stats import friedmanchisquare, wilcoxon, spearmanr
 from statsmodels.stats.multitest import multipletests
+import warnings
+
+warnings.filterwarnings('ignore', category=DeprecationWarning)
+warnings.filterwarnings('ignore', category=RuntimeWarning)
 
 Metric = namedtuple('Metric', ['column', 'name', 'ascending', 'baseline'])
 
@@ -19,6 +23,8 @@ def report(config, results):
     # metrics
     metrics = ['r0', 'r1', 'r0-r1', 'g-mean',
                'tr1', 'te1', 'pr1', 'th-ma', 'th-pr1']
+    print('r0-r1 {}'.format(results['r0-r1'].mean()))
+    print('g-mean {}'.format(results['g-mean'].mean()))
     metrics = {metric: results[metric].mean() for metric in metrics}
     mlflow.log_metrics(metrics)
     # artifacts
@@ -314,6 +320,7 @@ def obf_1(ma, th, l1, m):
 
 
 def table(config, df_testing: pd.DataFrame, metrics):
+    df_testing.to_csv('.df_testing.csv')
     metric_columns = {metric.column: ['mean', 'std'] for metric in metrics}
     df_table = df_testing.groupby(
         by=['dataset', 'classifier']).agg(metric_columns)

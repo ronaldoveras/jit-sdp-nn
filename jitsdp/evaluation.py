@@ -12,6 +12,16 @@ import pandas as pd
 from sklearn.model_selection import StratifiedShuffleSplit
 
 
+def alterarData(df):
+    df['timestamp_col'] = pd.to_datetime(df['timestamp'], unit='s')
+
+
+def separar_grupos(df):
+    global dfs
+    # groupby your key and freq
+    g = df.groupby(pd.Grouper(key='timestamp_col', freq='M'))
+    # groups to a list of dataframes with list comprehension
+    dfs = [group for _, group in g]
 def run(config):
     mlflow.log_params(config)
     set_seed(config)
@@ -41,10 +51,23 @@ def run(config):
         pipeline.save()
     target_prediction = None
     update_step = 0
-    for current in range(start, end, step):
-        df_train = df_prequential[:current].copy()
-        df_test = df_prequential[current:min(current + step, end)].copy()
-        df_train, df_tail = __prepare_tail_data(df_train, config)
+    alterarData(df_prequential)
+    separar_grupos(df_prequential)
+    i = 4
+    pull_request_size = pd.DataFrame()
+    two_months_length = []
+    while i < len(dfs) - 1:
+        df_two_months = pd.concat([dfs[i - 4], dfs[i - 3]])
+        two_months_length.append(df_two_months.shape[0])
+        # print('Qtd de itens atual {}'.format(df_two_months.shape[0]))
+        pull_request_size = pd.concat([pull_request_size, df_two_months])
+        # print('Qtd de itens acumulado {}'.format(pull_request_size.shape[0]))
+        df_test = pd.concat([dfs[i], dfs[i + 1]])
+        i = i + 1
+    # for current in range(start, end, step):
+    #     df_train = df_prequential[:current].copy()
+    #     df_test = df_prequential[current:min(current + step, end)].copy()
+        df_train, df_tail = __prepare_tail_data(pull_request_size, config)
 
         df_train = prepare_train_data(
             df_train, config)
@@ -68,6 +91,7 @@ def run(config):
     target_prediction = target_prediction.reset_index(drop=True)
     results = met.prequential_metrics(
         target_prediction, .99, config['borb_th'])
+    print('Média two months (std): {}({})'.format(np.mean(two_months_length), np.std(two_months_length)))
     report(config, results)
 
 

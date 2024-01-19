@@ -278,6 +278,7 @@ class BORB(Classifier):
                 yield _track_orb(metrics=metrics, ma=self.ma, lambda0=lambda0, lambda1=lambda1, obf0=obf0, obf1=obf1, **kwargs)
             df_output = self.classifier_train.predict(df_ma)
             self.ma = df_output['prediction'].mean()
+            # print('Self ma: {}'.format(self.ma))
 
     def predict(self, df_features, **kwargs):
         return self.__track(self.classifier_predict.predict(df_features, **kwargs))

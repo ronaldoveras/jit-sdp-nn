@@ -5,6 +5,9 @@ from jitsdp.utils import mkdir, split_proposal_baseline
 import matplotlib.pyplot as plt
 import Orange as og
 import seaborn as sns
+import warnings
+
+warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 
 def setup(font_scale=None):
