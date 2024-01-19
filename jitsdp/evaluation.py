@@ -18,11 +18,11 @@ def alterarData(df):
 
 
 def separar_grupos(df):
-    global dfs
     # groupby your key and freq
     g = df.groupby(pd.Grouper(key='timestamp_col', freq='M'))
     # groups to a list of dataframes with list comprehension
     dfs = [group for _, group in g]
+    return dfs
 def run(config):
     mlflow.log_params(config)
     set_seed(config)
@@ -53,7 +53,7 @@ def run(config):
     target_prediction = None
     update_step = 0
     alterarData(df_prequential)
-    separar_grupos(df_prequential)
+    dfs = separar_grupos(df_prequential)
     i = 4
     pull_request_size = pd.DataFrame()
     two_months_length = []
@@ -89,8 +89,7 @@ def run(config):
             df_test, df_threshold=df_tail, df_proportion=df_train, track_forest=config['track_forest'], track_time=config['track_time'])
         target_prediction = pd.concat(
             [target_prediction, target_prediction_test])
-        print('Salvando o modelo da iteração ' + str(current))
-        
+
         # pipeline.save()
         # explainer = shap.TreeExplainer(pipeline.model)
         # shap_values = explainer.shap_values(df_test)

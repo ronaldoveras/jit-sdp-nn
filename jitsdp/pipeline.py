@@ -63,7 +63,7 @@ def create_pipeline(config):
                           l0=config['borb_l0'],
                           l1=config['borb_l1'],
                           m=config['borb_m'])
-        print('Vou usar o BORB')
+        # print('Vou usar o BORB')
     return classifier
 
 
